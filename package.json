@@ -1,7 +1,11 @@
 {
   "name": "mcp-server-logger",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A debugging wrapper for Model Context Protocol (MCP) servers that captures stdin/stdout/stderr and signals to a log file, allowing for easier troubleshooting and development of MCP integrations.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/megmogmog1965/mcp-server-logger.git"
+  },
   "type": "module",
   "main": "./build/index.js",
   "bin": {
@@ -16,7 +20,7 @@
     "build"
   ],
   "keywords": [],
-  "author": "",
+  "author": "megmogmog1965",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.13.17",
