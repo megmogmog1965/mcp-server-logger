@@ -16,7 +16,7 @@ npm run build
 The mcp-server-logger can be run directly from the command line. It acts as a wrapper around any MCP server command, logging all stdin/stdout/stderr and signal activity to a specified log file.
 
 ```bash
-node build/index.js "{log-file-path}" {command} {args...}
+npx mcp-server-logger "{log-file-path}" {command} {args...}
 ```
 
 ## How to run on Claude for Desktop
@@ -33,10 +33,10 @@ Example configuration:
 {
   "mcpServers": {
     "filesystem": {
-      "command": "/{path-to-bin}/node",
+      "command": "/{path-to-bin}/npx",
       "args": [
-        "/{path-to-repository}/mcp-server-logger/build/index.js",
-        "/{path-to-repository}/mcp-server-logger/out",
+        "mcp-server-logger",
+        "/{path-to-user-home}/mcp-server.log",
         "/{path-to-bin}/npx",
         "-y",
         "@modelcontextprotocol/server-filesystem",

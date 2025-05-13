@@ -1,11 +1,23 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
 import * as fs from 'node:fs';
+// Validate command line arguments
+if (process.argv.length < 4) {
+    console.error('Error: Not enough arguments');
+    console.error('Usage: node index.js <log_file> <command> [arguments...]');
+    process.exit(1);
+}
 const logFile = process.argv[2];
 const command = process.argv[3];
 const args = process.argv.slice(4);
 // Create a stream for the log file
 const logStream = fs.createWriteStream(logFile, { flags: 'w' });
+// Handle log file errors
+logStream.on('error', (error) => {
+    console.error(`Error: Failed to open log file.`);
+    console.error(`${error.message}`);
+    process.exit(1);
+});
 // Launch subprocess
 const childProcess = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
 childProcess.on('error', (error) => {
