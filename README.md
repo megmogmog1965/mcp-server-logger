@@ -2,7 +2,10 @@
 
 A debugging wrapper for Model Context Protocol (MCP) servers that captures stdin/stdout/stderr and signals to a log file, allowing for easier troubleshooting and development of MCP integrations.
 
-**Note:** This tool is designed to work only on macOS and Unix-based operating systems. Windows is not supported.
+**Note:**
+
+* This tool is designed to work only on macOS and Unix-based operating systems. Windows is not supported
+* Only supports STDIO Transport. Does not support SSE.
 
 ## How to build (for development)
 
