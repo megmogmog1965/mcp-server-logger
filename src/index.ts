@@ -2,6 +2,7 @@
 
 import { spawn } from 'node:child_process';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 
 // Validate command line arguments
 if (process.argv.length < 4) {
@@ -16,6 +17,11 @@ const args = process.argv.slice(4);
 
 // Create a stream for the log file
 const logStream = fs.createWriteStream(logFile, { flags: 'a' });
+const log = (message: string) => {
+  const timestamp = new Date().toISOString();
+  const formattedMessage = `${timestamp} ${message}${message.endsWith(os.EOL) ? '' : os.EOL}`;
+  logStream.write(formattedMessage);
+};
 
 // Handle log file errors
 logStream.on('error', (error) => {
@@ -26,16 +32,16 @@ logStream.on('error', (error) => {
 
 // Launch subprocess
 const childProcess = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
-logStream.write(`[INFO] Subprocess launched: ${command} ${args.join(' ')}`);
+log(`[INFO] Subprocess launched: ${command} ${args.join(' ')}`);
 
 childProcess.on('error', (error) => {
   console.error(`Failed to start subprocess: ${error.message}`);
-  logStream.write(`[ERROR] Failed to start subprocess: ${error.message}`);
+  log(`[ERROR] Failed to start subprocess: ${error.message}`);
   process.exit(1);
 });
 
 childProcess.on('close', (code) => {
-  logStream.write(`[INFO] Subprocess finished with code ${code}`);
+  log(`[INFO] Subprocess finished with code ${code}`);
   logStream.end(); // Close the stream
   process.exit(code);
 });
@@ -43,26 +49,26 @@ childProcess.on('close', (code) => {
 // Pass subprocess standard output to parent process standard output
 childProcess.stdout.on('data', (chunk) => {
   process.stdout.write(chunk);
-  logStream.write(`[STDOUT] ${chunk}`); // Also write to log file
+  log(`[STDOUT] ${chunk}`); // Also write to log file
 });
 
 // Pass subprocess standard error to parent process standard error
 childProcess.stderr.on('data', (chunk) => {
   process.stderr.write(chunk);
-  logStream.write(`[STDERR] ${chunk}`); // Also write to log file
+  log(`[STDERR] ${chunk}`); // Also write to log file
 });
 
 // When data is input
 process.stdin.on('data', (chunk) => {
   childProcess.stdin.write(chunk);
-  logStream.write(`[STDIN] ${chunk}`); // Write standard input to log file
+  log(`[STDIN] ${chunk}`); // Write standard input to log file
 });
 
 // List linux signals.
 const signals = [
   'SIGABRT', 'SIGALRM', 'SIGBUS', 'SIGCHLD', 'SIGCONT', 'SIGFPE', 'SIGHUP',
-  'SIGILL', 'SIGINT', 'SIGIO', 'SIGIOT', 'SIGKILL', 'SIGPIPE', 'SIGPOLL',
-  'SIGPROF', 'SIGPWR', 'SIGQUIT', 'SIGSEGV', 'SIGSTKFLT', 'SIGSTOP', 'SIGSYS',
+  'SIGILL', 'SIGINT', 'SIGIO', 'SIGIOT', 'SIGPIPE', 'SIGPOLL',
+  'SIGPROF', 'SIGPWR', 'SIGQUIT', 'SIGSEGV', 'SIGSTKFLT', 'SIGSYS',
   'SIGTERM', 'SIGTRAP', 'SIGTSTP', 'SIGTTIN', 'SIGTTOU', 'SIGUNUSED', 'SIGURG',
   'SIGUSR1', 'SIGUSR2', 'SIGVTALRM', 'SIGWINCH', 'SIGXCPU', 'SIGXFSZ'
 ];
@@ -71,11 +77,11 @@ const signals = [
 signals.forEach(signal => {
   try {
     process.on(signal as NodeJS.Signals, () => {
-      logStream.write(`[SIGNAL] ${signal} received.`);
+      log(`[SIGNAL] ${signal} received.`);
     });
   } catch (err) {
     // for windows os.
-    logStream.write(`[ERROR] ${err}`);
+    log(`[ERROR] ${err}`);
   }
 });
 
@@ -83,16 +89,16 @@ signals.forEach(signal => {
 ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGTERM'].forEach(signal => {
   try {
     process.on(signal as NodeJS.Signals, () => {
-      logStream.write(`[SIGNAL] ${signal} received from parent process, forwarding to child process.`);
+      log(`[SIGNAL] ${signal} received from parent process, forwarding to child process.`);
 
       try {
         childProcess.kill(signal as NodeJS.Signals);
       } catch (err) {
-        logStream.write(`[ERROR] ${err}`);
+        log(`[ERROR] ${err}`);
       }
     });
   } catch (err) {
     // for windows os.
-    logStream.write(`[ERROR] ${err}`);
+    log(`[ERROR] ${err}`);
   }
 });
