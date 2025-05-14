@@ -11,7 +11,7 @@ const logFile = process.argv[2];
 const command = process.argv[3];
 const args = process.argv.slice(4);
 // Create a stream for the log file
-const logStream = fs.createWriteStream(logFile, { flags: 'w' });
+const logStream = fs.createWriteStream(logFile, { flags: 'a' });
 // Handle log file errors
 logStream.on('error', (error) => {
     console.error(`Error: Failed to open log file.`);
@@ -20,12 +20,14 @@ logStream.on('error', (error) => {
 });
 // Launch subprocess
 const childProcess = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
+logStream.write(`[PROXY_INFO] Subprocess launched: ${command} ${args.join(' ')}`);
 childProcess.on('error', (error) => {
     console.error(`Failed to start subprocess: ${error.message}`);
     logStream.write(`[PROXY_ERROR] Failed to start subprocess: ${error.message}`);
     process.exit(1);
 });
 childProcess.on('close', (code) => {
+    logStream.write(`[PROXY_INFO] Subprocess finished with code ${code}`);
     logStream.end(); // Close the stream
     process.exit(code);
 });

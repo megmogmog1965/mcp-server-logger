@@ -15,7 +15,7 @@ const command = process.argv[3];
 const args = process.argv.slice(4);
 
 // Create a stream for the log file
-const logStream = fs.createWriteStream(logFile, { flags: 'w' });
+const logStream = fs.createWriteStream(logFile, { flags: 'a' });
 
 // Handle log file errors
 logStream.on('error', (error) => {
@@ -26,6 +26,7 @@ logStream.on('error', (error) => {
 
 // Launch subprocess
 const childProcess = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
+logStream.write(`[PROXY_INFO] Subprocess launched: ${command} ${args.join(' ')}`);
 
 childProcess.on('error', (error) => {
   console.error(`Failed to start subprocess: ${error.message}`);
@@ -34,6 +35,7 @@ childProcess.on('error', (error) => {
 });
 
 childProcess.on('close', (code) => {
+  logStream.write(`[PROXY_INFO] Subprocess finished with code ${code}`);
   logStream.end(); // Close the stream
   process.exit(code);
 });
@@ -58,8 +60,8 @@ process.stdin.on('data', (chunk) => {
 
 // List linux signals.
 const signals = [
-  'SIGABRT', 'SIGALRM', 'SIGBUS', 'SIGCHLD', 'SIGCONT', 'SIGFPE', 'SIGHUP', 
-  'SIGILL', 'SIGINT', 'SIGIO', 'SIGIOT', 'SIGKILL', 'SIGPIPE', 'SIGPOLL', 
+  'SIGABRT', 'SIGALRM', 'SIGBUS', 'SIGCHLD', 'SIGCONT', 'SIGFPE', 'SIGHUP',
+  'SIGILL', 'SIGINT', 'SIGIO', 'SIGIOT', 'SIGKILL', 'SIGPIPE', 'SIGPOLL',
   'SIGPROF', 'SIGPWR', 'SIGQUIT', 'SIGSEGV', 'SIGSTKFLT', 'SIGSTOP', 'SIGSYS',
   'SIGTERM', 'SIGTRAP', 'SIGTSTP', 'SIGTTIN', 'SIGTTOU', 'SIGUNUSED', 'SIGURG',
   'SIGUSR1', 'SIGUSR2', 'SIGVTALRM', 'SIGWINCH', 'SIGXCPU', 'SIGXFSZ'
