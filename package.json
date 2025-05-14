@@ -1,6 +1,6 @@
 {
   "name": "mcp-server-logger",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A debugging wrapper for Model Context Protocol (MCP) servers that captures stdin/stdout/stderr and signals to a log file, allowing for easier troubleshooting and development of MCP integrations.",
   "repository": {
     "type": "git",

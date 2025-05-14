@@ -29,6 +29,7 @@ const childProcess = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
 
 childProcess.on('error', (error) => {
   console.error(`Failed to start subprocess: ${error.message}`);
+  logStream.write(`[PROXY_ERROR] Failed to start subprocess: ${error.message}`);
   process.exit(1);
 });
 
@@ -69,14 +70,15 @@ signals.forEach(signal => {
   try {
     process.on(signal as NodeJS.Signals, () => {
       logStream.write(`[SIGNAL] ${signal} received, forwarding to child process.`);
+
       try {
         childProcess.kill(signal as NodeJS.Signals);
       } catch (err) {
-        // err.
+        logStream.write(`[PROXY_ERROR] ${err}`);
       }
     });
   } catch (err) {
-    // Ignore if this signal is not supported on the current platform
-    // console.debug(`Signal ${signal} is not supported`);
+    // for windows os.
+    logStream.write(`[PROXY_ERROR] ${err}`);
   }
 });

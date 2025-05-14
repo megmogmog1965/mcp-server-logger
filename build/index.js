@@ -22,6 +22,7 @@ logStream.on('error', (error) => {
 const childProcess = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
 childProcess.on('error', (error) => {
     console.error(`Failed to start subprocess: ${error.message}`);
+    logStream.write(`[PROXY_ERROR] Failed to start subprocess: ${error.message}`);
     process.exit(1);
 });
 childProcess.on('close', (code) => {
@@ -60,12 +61,12 @@ signals.forEach(signal => {
                 childProcess.kill(signal);
             }
             catch (err) {
-                // err.
+                logStream.write(`[PROXY_ERROR] ${err}`);
             }
         });
     }
     catch (err) {
-        // Ignore if this signal is not supported on the current platform
-        // console.debug(`Signal ${signal} is not supported`);
+        // for windows os.
+        logStream.write(`[PROXY_ERROR] ${err}`);
     }
 });
