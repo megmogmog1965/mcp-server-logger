@@ -20,14 +20,14 @@ logStream.on('error', (error) => {
 });
 // Launch subprocess
 const childProcess = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
-logStream.write(`[PROXY_INFO] Subprocess launched: ${command} ${args.join(' ')}`);
+logStream.write(`[INFO] Subprocess launched: ${command} ${args.join(' ')}`);
 childProcess.on('error', (error) => {
     console.error(`Failed to start subprocess: ${error.message}`);
-    logStream.write(`[PROXY_ERROR] Failed to start subprocess: ${error.message}`);
+    logStream.write(`[ERROR] Failed to start subprocess: ${error.message}`);
     process.exit(1);
 });
 childProcess.on('close', (code) => {
-    logStream.write(`[PROXY_INFO] Subprocess finished with code ${code}`);
+    logStream.write(`[INFO] Subprocess finished with code ${code}`);
     logStream.end(); // Close the stream
     process.exit(code);
 });
@@ -54,21 +54,33 @@ const signals = [
     'SIGTERM', 'SIGTRAP', 'SIGTSTP', 'SIGTTIN', 'SIGTTOU', 'SIGUNUSED', 'SIGURG',
     'SIGUSR1', 'SIGUSR2', 'SIGVTALRM', 'SIGWINCH', 'SIGXCPU', 'SIGXFSZ'
 ];
-// Forward signals to child process
+// Logging signals.
 signals.forEach(signal => {
     try {
         process.on(signal, () => {
-            logStream.write(`[SIGNAL] ${signal} received, forwarding to child process.`);
+            logStream.write(`[SIGNAL] ${signal} received.`);
+        });
+    }
+    catch (err) {
+        // for windows os.
+        logStream.write(`[ERROR] ${err}`);
+    }
+});
+// Forward signals from parent process to child process
+['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGTERM'].forEach(signal => {
+    try {
+        process.on(signal, () => {
+            logStream.write(`[SIGNAL] ${signal} received from parent process, forwarding to child process.`);
             try {
                 childProcess.kill(signal);
             }
             catch (err) {
-                logStream.write(`[PROXY_ERROR] ${err}`);
+                logStream.write(`[ERROR] ${err}`);
             }
         });
     }
     catch (err) {
         // for windows os.
-        logStream.write(`[PROXY_ERROR] ${err}`);
+        logStream.write(`[ERROR] ${err}`);
     }
 });
